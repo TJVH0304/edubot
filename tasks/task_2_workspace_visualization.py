@@ -2,7 +2,8 @@ import numpy as np
 from itertools import product
 import pyvista as pv
 from scipy.spatial import ConvexHull
-
+pv.OFF_SCREEN = True  # Globally force off-screen
+pv.set_plot_theme("document") # Optional: makes backgrounds white for reports
 
 def rotation_joint_matrix(angle):
     R_z = np.array([[np.cos(angle), -np.sin(angle), 0, 0],
@@ -83,58 +84,62 @@ def find_workspace(data, joint_limits, max_iterations,condition):
         distance = distance[distance[:,0]>=0] # Only consider points with x >= 0 for the workspace.
     return distance
 
-def plot_workspace(distance, plot, target_state,target_name):
-    plotter = pv.Plotter()
-    target_position = target_state[:,:3]
-    # Create a point cloud
+def plot_workspace(distance, plot, target_state, target_name, save):
+
+
+    save_path_1 = 'workspace_point_cloud.png'
+    save_path_2 = 'workspace_convex_hull.png'
+    # --- PHASE 1: POINT CLOUD ---
+    # Use off_screen=True if we are ONLY saving, False if we want to see it
+    plotter1 = pv.Plotter(off_screen=(not plot)) 
     point_cloud = pv.PolyData(distance)
 
-    # Add the point cloud with a color map
-    plotter.add_mesh(
+    plotter1.add_mesh(
         point_cloud,
-        scalars=np.arange(len(distance)),
+        scalars=distance[:, 2], # Color by height for better visuals
         cmap='viridis',
         point_size=5,
         render_points_as_spheres=True
     )
+    plotter1.add_axes()
+    plotter1.show_grid()
 
-    # Add axes
-    plotter.add_axes()
-    plotter.show_grid()
+    # CRITICAL CHANGE: Pass the screenshot path INTO the show() command
     if plot:
-        plotter.show()
+        plotter1.show(screenshot=save_path_1 if save else None)
+    elif save:
+        plotter1.show(screenshot=save_path_1, auto_close=True)
+    else:
+        plotter1.close()
 
+    # --- PHASE 2: CONVEX HULL MESH ---
     hull = ConvexHull(distance)
-
-    faces = []
-    for simplex in hull.simplices:
-        faces.append([3, simplex[0], simplex[1], simplex[2]])
-
-    faces = np.hstack(faces)
+    faces = np.column_stack((np.full(len(hull.simplices), 3), hull.simplices)).flatten()
     mesh = pv.PolyData(distance, faces)
 
-    # Plot
-    plotter = pv.Plotter()
-    plotter.add_mesh(mesh, color='lightblue', opacity=0.5, show_edges=True)
+    plotter2 = pv.Plotter(off_screen=(not plot))
+    plotter2.add_mesh(mesh, color='lightblue', opacity=0.5, show_edges=True)
 
-    # Add target positions as red spheres with labels
-    target_cloud = pv.PolyData(target_position)
-    plotter.add_mesh(
-        target_cloud,
-        color='red',
-        point_size=15,
-        render_points_as_spheres=True
-    )
-    # Add labels for each target
-    labels = [f'{target_name[i]}' for i in range(len(target_position))]
-    plotter.add_point_labels(target_position, labels, font_size=12, text_color='red', always_visible=True)
+    if target_state is not None and len(target_state) > 0:
+        target_state_np = np.array(target_state)
+        target_position = target_state_np[:, :3]
+        target_cloud = pv.PolyData(target_position)
+        plotter2.add_mesh(target_cloud, color='red', point_size=15, render_points_as_spheres=True)
+        
+        if target_name and len(target_name) > 0:
+            labels = [f'{target_name[i]}' for i in range(min(len(target_position), len(target_name)))]
+            plotter2.add_point_labels(target_position[:len(labels)], labels, font_size=12, text_color='red', always_visible=True)
+            
+    plotter2.add_axes()
+    plotter2.show_grid()
 
-    plotter.add_axes()
-    plotter.show_grid()
+    # CRITICAL CHANGE: Pass the screenshot path INTO the show() command
     if plot:
-        plotter.show()
-
-
+        plotter2.show(screenshot=save_path_2 if save else None)
+    elif save:
+        plotter2.show(screenshot=save_path_2, auto_close=True)
+    else:
+        plotter2.close()
 if __name__ == "__main__":
 
     data = {
@@ -157,10 +162,18 @@ if __name__ == "__main__":
     }
 
     joint_limits = {
-        'shoulder': (-2, 2),
-        'upper_arm': (-np.pi/2, np.pi/2),
-        'lower_arm': (-np.pi/2, np.pi/2),
-        'wrist': (-np.pi/2, np.pi/2),
+        'shoulder': (-1.998, 2.140),
+        'upper_arm': (-2.002, 1.879),
+        'lower_arm': (-1.642, 1.695),
+        'wrist': (-1.77328, 1.81009),
+        'gripper': (-2.9206, 2.9529)
+    }
+    
+    joint_limits_unconstrained = {
+        'shoulder': (-np.pi, np.pi),
+        'upper_arm': (-np.pi, np.pi),
+        'lower_arm': (-np.pi, np.pi),
+        'wrist': (-np.pi, np.pi),
         'gripper': (-np.pi, np.pi)
     }
 
@@ -170,15 +183,17 @@ if __name__ == "__main__":
                                [0.0 , 0.0,0.07, 3.141, 0.0, 0.0],
                                [0.0, 0.0452, 0.45, -0.785, 0.0, 3.141]])
 
-    splits = 10 # Number of splits for each joint angle range (total configurations = splits^5)
-    condition = False # Set to True to only consider points with x >= 0, False to consider all points
+    splits = 20 # Number of splits for each joint angle range (total configurations = splits^5)
+    condition = True # Set to True to only consider points with x >= 0, False to consider all points
     plot = True # Set to True to visualize the workspace and target positions, False to skip visualization
-    save = False # Set to True to save the workspace points to a CSV file, False to skip saving
+    save_csv = False # Set to True to save the workspace points to a CSV file, False to skip saving
     
     
     distance = find_workspace(data, joint_limits, splits, condition)
+    distance_unconstrained = find_workspace(data, joint_limits_unconstrained, splits, condition)
 
-    if save == True:
+    if save_csv == True:
         np.savetxt('workspace_points.csv', distance, delimiter=',')
 
-    plot_workspace(distance, plot, target_state,target_name=['I','II','III','IV-a','IV-b']) 
+    plot_workspace(distance, plot, target_state,target_name=['I','II','III','IV-a','IV-b'], save=False)
+    plot_workspace(distance_unconstrained, plot, None,target_name=None, save=False)
