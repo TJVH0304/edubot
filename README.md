@@ -40,7 +40,7 @@ Note that _ros\_ws/src/python\_controllers/setup.py_ has been modified to add th
 
 To obtain the trajectory csv files for the task 2.1.2 points, triangle, figure eight, pick and place, and stacking, one can simply run the _robot\_*.py_ files in _api/_. This then saves the csv file which is read by the controller nodes.
 
-To generate the path for the multiple orientations of a point (task 2.2), one can run ***.
+To generate the path for the multiple orientations of a point (task 2.2), one can run _tasks/task\_2\_multiple\_orientation.py_.
 
 To obtain the csv file for the angular velocities (task 3.3), and the plot obtained, one can run _tasks/task\_3.py_.
 
