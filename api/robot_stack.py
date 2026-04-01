@@ -24,9 +24,6 @@ place = np.array(
 # create the stacking trajectory
 sp = StackingPath(load, place, n_blocks=5, h_blocks=0.02)
 
-# print(sp.pickup_points)
-# print(sp.place_points)
-
 # create an array with the joint angles to send to the controller
 q_arr = []
 
