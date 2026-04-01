@@ -12,7 +12,7 @@ class RobotTraj(Node):
 
         self._publisher = self.create_publisher(JointTrajectory, 'joint_cmds', 10)
 
-        self._joint_trajectory = np.genfromtxt('pnp_path.csv', delimiter=',')
+        self._joint_trajectory = np.genfromtxt('figeight_path.csv', delimiter=',')
 
         self._total_duration: float = duration
         self._num_segments: int = len(self._joint_trajectory) - 1
@@ -72,7 +72,7 @@ class RobotTraj(Node):
 def main(args=None) -> None:
     rclpy.init(args=args)
 
-    mover = RobotTraj(duration=30.0)
+    mover = RobotTraj(duration=10.0)
 
     if rclpy.ok():
         rclpy.spin(mover)

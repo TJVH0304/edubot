@@ -23,5 +23,4 @@ for i, p in enumerate(fp.points):
         print(f'point {p} failed')
 
 
-np.savetxt('path.csv', q_arr, delimiter=', ')
-
+np.savetxt('figeight_path.csv', q_arr, delimiter=', ')
