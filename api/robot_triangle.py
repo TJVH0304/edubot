@@ -25,5 +25,5 @@ for p in tp.points:
     else:
         print(f'point {p} failed')
 
-np.savetxt('ros_ws/triangle_path.csv', q_arr, delimiter=', ')
+np.savetxt('triangle_path.csv', q_arr, delimiter=', ')
 

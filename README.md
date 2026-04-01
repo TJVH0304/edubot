@@ -12,6 +12,7 @@ Added w.r.t. the edubot repository are the following:
   - _path_, where custom _Path_ objects are defined to generate the trajectories to feed into the IK
   -  _robot\_*_, where the used paths are defined and fed into the robot to find the joint angles
 -  _tasks/_, where extra code to complete some of the tasks can be found
+-  _data/_, where the csv files used in the videos can be found
 
 Additionally, the following controller nodes are added in _ros\_ws/src/python\_controllers/python\_controllers/_:
 
