@@ -293,6 +293,14 @@ class Robot:
 
         return t_hist
 
+JOINT_LIMITS_UNCONSTRAINED = np.array([
+    [-np.pi, np.pi],
+    [-np.pi, np.pi],
+    [-np.pi, np.pi],
+    [-np.pi, np.pi],
+    [-np.pi, np.pi],
+    [-np.pi, np.pi]
+])
 
 JOINT_LIMITS_SIMULATION = np.array([
     [-2, 2],
@@ -301,6 +309,15 @@ JOINT_LIMITS_SIMULATION = np.array([
     [-np.pi / 2, np.pi / 2],
     [-np.pi, np.pi],
     [-np.pi, np.pi]
+])
+
+JOINT_LIMITS_HARDWARE = np.array([
+    [-1.998, 2.140],
+    [-2.002, 1.879],
+    [-1.642, 1.695],
+    [-1.77328, 1.81009],
+    [-2.9206, 2.9529],
+    [0, 2.201]
 ])
 
 if __name__ == '__main__':
