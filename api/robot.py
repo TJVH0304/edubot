@@ -5,8 +5,6 @@ Initialize using robot = Robot()
 Set joint limits using robot.set_lim(LIMITS)
 
 Default joint limits (unconstrained, simulation constrained, hardware constrained) are also defined
-
-TODO: helper function for plotting the workspace
 '''
 import numpy as np
 import matplotlib.pyplot as plt
@@ -150,7 +148,7 @@ class Robot:
                 domega = (e1 - e0) / eps
 
             else:
-                raise ValueError('invalid orientation mode twin')
+                raise ValueError('invalid orientation mode')
 
             J[:3, i] = dp
             J[3:, i] = domega
@@ -187,7 +185,7 @@ class Robot:
             elif orientation_mode == 'axis':
                 rot_err = self._orientation_error_tool_axis_only(R, target_rot, axis=tool_axis)
             else:
-                raise ValueError('invalid orientation mode twin')
+                raise ValueError('invalid orientation mode')
 
             last_pos_error_norm = np.linalg.norm(pos_err)
             last_rot_error_norm = np.linalg.norm(rot_err)
@@ -269,7 +267,7 @@ class Robot:
         elif orientation_mode == 'axis':
             error_rot = self._orientation_error_tool_axis_only(R, target.R(), axis=tool_axis)
         else:
-            raise ValueError('invalid orientation mode twin')
+            raise ValueError('invalid orientation mode')
 
         error_rot = np.linalg.norm(error_rot)
 

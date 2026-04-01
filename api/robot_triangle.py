@@ -24,22 +24,6 @@ for p in tp.points:
         q_arr.append(q)
     else:
         print(f'point {p} failed')
-# q_out = []
-# steps_between = 20  # increase for smoother motion
-
-# for i in range(len(q_arr) - 1):
-#     q_start = q_arr[i]
-#     q_end = q_arr[i + 1]
-
-#     for t in np.linspace(0, 1, steps_between, endpoint=False):
-#         q_interp = (1 - t) * q_start + t * q_end
-#         q_out.append(q_interp)
-
-# # append the final point
-# q_out.append(q_arr[-1])
-
-# q_out = np.array(q_out)
-
 
 np.savetxt('ros_ws/triangle_path.csv', q_arr, delimiter=', ')
 

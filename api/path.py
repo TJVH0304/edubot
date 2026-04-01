@@ -21,7 +21,7 @@ class TrianglePath(RobotPath):
         corner_points = np.asarray(corner_points, dtype=np.float64)
 
         if corner_points.shape != (3, 3):
-            raise ValueError('corner points needa be 3x3')
+            raise ValueError('corner points need to be 3x3')
 
         a, b, c = corner_points
 
@@ -47,14 +47,12 @@ class FigureEightPath(RobotPath):
 
         t = np.linspace(0, 2 * np.pi, points, endpoint=closed)
 
-        # Figure-eight in XZ plane (y fixed)
         x = np.sin(t)
         y = np.zeros_like(t) + center[1]
         z = np.sin(t) * np.cos(t)
 
         path = np.stack((x, y, z), axis=1)
 
-        # Scale and translate
         path = scale * path + center[None, :]
 
         super().__init__(path)
@@ -97,35 +95,32 @@ class PickAndPlacePath(RobotPath):
         def waypoint(p):
             path.append(p[None, :])
 
-        # Precompute lifted points
         load_up = lift(load)
         target_up = lift(target)
 
-        # ---- FORWARD: load → target ----
         move(home, load_up)
         move(load_up, load)
-        waypoint(load)          # PICK
+        waypoint(load)         
         self.__pickup_idx.append(len(np.vstack(path)) - 1)
 
         move(load, load_up)
         move(load_up, target_up)
         move(target_up, target)
-        waypoint(target)        # PLACE
+        waypoint(target)
         self.__place_idx.append(len(np.vstack(path)) - 1)
 
         move(target, target_up)
         move(target_up, home)
 
-        # ---- BACKWARD: target → load ----
         move(home, target_up)
         move(target_up, target)
-        waypoint(target)        # PICK
+        waypoint(target)  
         self.__pickup_idx.append(len(np.vstack(path)) - 1)
 
         move(target, target_up)
         move(target_up, load_up)
         move(load_up, load)
-        waypoint(load)          # PLACE
+        waypoint(load)    
         self.__place_idx.append(len(np.vstack(path)) - 1)
 
         move(load, load_up)
@@ -192,12 +187,7 @@ class StackingPath(RobotPath):
         def waypoint(p):
             path.append(p[None, :])
 
-        # Precompute lifted points
-        
-        
-        
-        # TODO: make for loop, and use self.n_blocks
-        # pick up block 1
+        # loop over all the points. Note: max is likely 5.
         for i in range(self.n_blocks):
             load_up = lift(load, i)
             move(load_up, load)
@@ -217,44 +207,6 @@ class StackingPath(RobotPath):
 
             if i != self.n_blocks - 1:
                 move(target_up, load_up)
-
-        # move(load_up, load)
-        # waypoint(load) # pick
-        # self.__pickup_idx.append(len(np.vstack(path)) - 1)
-
-        # move(load, load_up)
-
-        # # move to target area
-        # target = target_n(0)
-        # target_up = lift(target, 0)
-        # move(load_up, target_up)
-
-        # # place block 1
-        # move(target_up, target)
-        # waypoint(target) # place
-        # self.__place_idx.append(len(np.vstack(path)) - 1)
-        # move(target, target_up)
-
-        # # move to block 2 load
-        # move(target_up, load_up)
-
-        # # pick up block 2
-        # move(load_up, load)
-        # waypoint(load) # pick
-        # self.__pickup_idx.append(len(np.vstack(path)) - 1)
-
-        # move(load, load_up)
-
-        # # move to target area
-        # target = target_n(1)
-        # target_up = lift(target, 1)
-        # move(load_up, target_up)
-
-        # # place block 2
-        # move(target_up, target)
-        # waypoint(target) # place
-        # self.__place_idx.append(len(np.vstack(path)) - 1)
-        # move(target, target_up)
 
         return np.vstack(path)
 

@@ -55,5 +55,4 @@ for i, p in enumerate(pp.points):
     else:
         print(f'point {p} failed')
 
-# np.savetxt('ros_ws/pnp_path.csv', q_arr, delimiter=', ')
 np.savetxt('pnp_path.csv', q_arr, delimiter=', ')
