@@ -42,7 +42,7 @@ To obtain the trajectory csv files for the task 2.1.2 points, triangle, figure e
 
 To generate the path for the multiple orientations of a point (task 2.2), one can run ***.
 
-To obtain the csv file for the angular velocities (task 3.3), one can run ***.
+To obtain the csv file for the angular velocities (task 3.3), and the plot obtained, one can run _tasks/task\_3.py_.
 
 To obtain the workspace plot, one can run ***.
 
