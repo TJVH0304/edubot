@@ -1,201 +1,46 @@
-# EduBot: The library for manipulators for Education
+# Physical Interaction for Aerial and Space Robots – Group 6 Code
 
-This repository contains the drivers, visualization features and a simple simulation for [LeRobot](https://github.com/huggingface/lerobot) (and for legacy reasons also the [Lynxmotion AL5A Arm](https://wiki.lynxmotion.com/info/wiki/lynxmotion/view/servo-erector-set-robots-kits/ses-v1-robots/ses-v1-arms/al5a/), in its designated branch), all of which are implemented using the [ROS2](https://docs.ros.org/en/humble/index.html) middleware.
+Please refer to the [edubot repository](https://github.com/BioMorphic-Intelligence-Lab/edubot) for installation instructions and the provided launch scripts and controllers.
 
-## Installation
+## Repository Layout
 
-### Pre-requisites
+Added w.r.t. the edubot repository are the following:
 
-To compile the pre-requisites are `ROS 2` and `boost`.
+- _api/_, where the following python files are present:
+  - _robot_, defining the custom _Robot_ class which houses the forward and inverse kinematics
+  - _transform_, which features the custom api for transformation matrices using the _Transformation_ class
+  - _path_, where custom _Path_ objects are defined to generate the trajectories to feed into the IK
+  -  _robot\_*_, where the used paths are defined and fed into the robot to find the joint angles
+-  _tasks/_, where extra code to complete some of the tasks can be found
 
-#### For Ubuntu 22.04 users: Install ROS 2 Humble:
-ROS 2 Humble (LTS) can be installed for ubuntu (>= 22.04) as explained in the [ROS 2 documentation](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html). 
-Additional prerequisites are found [here](#for-virtual-machine-users) if you're using a Virtual Machine.
-The easiest way is to add the sources and install via apt
+Additionally, the following controller nodes are added in _ros\_ws/src/python\_controllers/python\_controllers/_:
 
-        # Add the ROS 2 GPG key with apt.
-        sudo apt update && sudo apt install curl -y
-        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg 
+Python file | Command | File read | Use
+-|-|-|-
+_traj_ | traj | _path.csv_ | Move along an arbitrary path
+_given\_traj_ | given | _given\_path.csv_ | Move to the 5 given points in task 2.1.2 if they are feasible
+_triangle\_traj_ | triangle | _triangle\_path.csv_ | Move along the triangle
+_figeight\_traj_ | figeight | _figeight\_path.csv_ | Move along the figure eight
+_pnp\_traj_ | pnp | _pnp\_path.csv_ | Perform the pick and place trajectory
+_stack\_traj_ | stack | _stack\_path.csv_ | Perform the stacking trajectory
+_vel\_traj.py_ | vel | _angular\_velocity\_joints.csv_ | Perform the velocity control path
 
-        # Add the repository to your sources list.
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+Note that the full command is:
 
-        # Update the sources
-        sudo apt update && sudo apt upgrade
+ros2 run python\_controllers *,
 
-        # Finally install ros and ros-dev tools
-        sudo apt install ros-humble-desktop ros-dev-tools
+and the file name is read from the place that command is started from. 
 
-Make sure the additional ros libraries are installed
+All but the last work using the position launch scripts, while the last requires the velocity launch script.
 
-        sudo apt install ros-humble-xacro ros-humble-joint-state-publisher ros-humble-joint-state-publisher-gui
-        # Install pip if not yet installed
-        sudo apt-get install python3-pip
-        # Install python pkg dependency
-        pip install catkin_pkg
+Note that _ros\_ws/src/python\_controllers/setup.py_ has been modified to add these as well.
 
-#### For Ubuntu 24.04 users Install ROS 2 Jazzy:
-ROS 2 Jazzy (LTS) can be installed for ubuntu (>= 24.04) as explained in the [ROS 2 documentation](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html). 
-Additional prerequisites are found [here](#for-virtual-machine-users) if you're using a Virtual Machine.
-The easiest way is to add the sources and install via apt
+## Generating results
 
-        # Add the ROS 2 GPG key with apt.
-        sudo apt update && sudo apt install curl -y
-        zsudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+To obtain the trajectory csv files for the task 2.1.2 points, triangle, figure eight, pick and place, and stacking, one can simply run the _robot\_*.py_ files in _api/_. This then saves the csv file which is read by the controller nodes.
 
-        # Add the repository to your sources list.
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+To obtain the csv file for the angular velocities (task 3.3), one can run ***.
 
-        # Update the sources
-        sudo apt update
+To obtain the workspace plot, one can run ***.
 
-        # Finally install ros and ros-dev tools
-        sudo apt install ros-dev-tools ros-jazzy-desktop
-
-Make sure the additional ros libraries are installed
-
-        sudo apt install ros-jazzy-xacro ros-jazzy-joint-state-publisher ros-jazzy-joint-state-publisher-gui
-        # Install pip if not yet installed
-        sudo apt-get install python3-pip
-        # Install python pkg dependency (global)
-        sudo apt-get install python-catkin_pkg
-
-If your installation complains about GPG keys, run:
-```
-sudo rm /etc/apt/sources.list.d/ros2.sources
-```
-
-#### For both 22.04 and 24.04
-
-The required `boost` libraries are installed via
-
-        sudo apt install libboost-all-dev
-
-Finally, clone this repository recursively
-
-        git clone --recurse-submodules https://github.com/bioMorphic-Intelligence-Lab/edubot
-
-To allow the `ROS` program to access the USB port connected to the eduBot you will also have to add the current user to the dialout group
-
-        sudo usermod -a -G dialout $USER
-
-### Compilation
-
-The repository contains two folders: `ros_ws` and `testing`.
-The former contains the driver, visualization, simulation and a simple control example of the robot (in C++ and python) while the latter only contains plain testing scrips. 
-You can choose which language you would like to write your controller in using the code provided as an initial guideline.
-To compile the ROS workspace, source your ROS installation and call the `colcon` build command as follows:
-
-        cd edubot/ros_ws
-
-        # For ROS 2 Humble users
-        source /opt/ros/humble/setup.bash
-        
-        # For ROS 2 Jazzy users
-        source /opt/ros/jazzy/setup.bash
-        
-        # Call build command
-        colcon build
-
-### Running
-
-Once the package is compiled, source by calling:
-
-      # Source the local setup
-      source install/setup.bash
-
-You can run start the simulation or the driver for the robot with the following commands.
-
-### Updating
-The packages are continually being updated, so be sure to update every once in a while by calling 
-```
-git submodule update --recursive
-git pull
-```
-
-**Launch files (lerobot package)**
-
-| Command | Effect |
-|---------|--------|
-| `ros2 launch lerobot sim_position.launch.py` | Simulation and RViz in position control mode |
-| `ros2 launch lerobot sim_velocity.launch.py` | Simulation and RViz in velocity control mode |
-| `ros2 launch lerobot rviz.launch.py` | RViz only. **Launch something else** (sim, hw, or joint_slider) in another terminal to see the robot at a real pose. |
-| `ros2 launch lerobot joint_slider.launch.py` | Joint position slider GUI (no RViz) |
-| `ros2 launch lerobot hw_position.launch.py` | Hardware interface in position control mode |
-| `ros2 launch lerobot hw_velocity.launch.py` | Hardware interface in velocity control mode |
-| `ros2 launch lerobot hw_read.launch.py` | Passive read-only: publish joint states, torque disabled (move robot by hand) |
-
-When you launch **RViz only** (`rviz.launch.py`), the robot is shown in the default pose (all joints 0) until another node publishes joint states. To see the robot at a real position, launch one of the following in a **second terminal**: simulation (`sim_position` or `sim_velocity`), hardware (`hw_position`, `hw_velocity`, or `hw_read`), or the joint slider (`joint_slider.launch.py`).
-
-**Running controllers directly (without launch file)**
-
-| Command | Effect |
-|---------|--------|
-| `ros2 run controllers example_pos_traj` | C++ example position mode trajectory controller |
-| `ros2 run controllers example_vel_traj` | C++ example velocity mode trajectory controller |
-| `ros2 run python_controllers example_pos_traj` | Python example trajectory controller |
-| `ros2 run python_controllers example_vel_traj` | Python velocity trajectory controller |
-
-### For Virtual Machine Users
-
-Download and install both **VirtualBox** and **VirtualBox Extension Pack** from [their website](https://www.virtualbox.org/wiki/Downloads). Ensure that both have the same versions. If you have a virtual machine already running, first power it off before installing the Extension Pack and proceeding.
-
-Go to **Virtual Machine Settings > USB**, check **Enable USB Controller** and the corresponding USB type. In my case it was **USB 3.0 (xHCI) Controller**. 
-
-Connect the (1) robot's USB connector, (2) power the robot motors, and then (3) power on virtual machine. Every time you open a new terminal, source your `ros` installation and call the `colcon` compilation, as stated above.
-
-Verify that the virtual machine can read the USB by listing files and directories that starts with **ttyUSB-**
-
-        ls -l /dev/ttyUSB*
-
-If you get a **permission denied** error such as [this](https://support.termius.com/hc/en-us/articles/6325078649753-When-trying-to-make-a-serial-connection-I-get-a-Permission-denied-error#:~:text=Most%20'Permission%20denied'%20error%20messages,identify%20the%20serial%20port%20path.&text=The%20next%20step%20is%20to,running%20the%20command%20provided%20below.) add your user account to the appropriate group by
-
-        sudo usermod -a $USER -G dialout
-
-Log in and log out user account and then try again. Don't forget to source.
-
-**Important**: If the USB still cannot be read, unplug everything and kill all ROS processes, (1) power the virtual machine, (2) power ON the robot emergency switch, (3) plug in the USB connector, (4) plug in power for motors.
-
-Example implementation can be found [here](https://www.youtube.com/watch?v=h-EOHbVqsJg).
-
-## Troubleshooting
-### BRLTTY
-There is a package that sometimes is installed automatically with Ubuntu called `brltty`, which interferes with servo driver. You can remove it by calling 
-```
-sudo apt purge brltty
-```
-
-### Wrong baud rate or USB port
-In the config (`lerobot\config\robot_hw.yaml`), the USB port name is defined along with the baud rate. You can check which USB port is assigned by calling `ls /dev/ttyUSB*`. This should correspond to the serial port name defined in the yaml file. Rebuild to make config changes take effect.
-
-If you are using WSL, the issue may be in USB passthrough to WSL. You can install and use `usbipd` to enable USB passthrough, bind the port, and attach to WSL. Google and ChatGPT are your friend :)
-
-## Issues
-
-If any bugs or issues with this software occur, please don't hesitate to use the [Issues](https://github.com/BioMorphic-Intelligence-Lab/edubot/issues) pane within this repository. Please write a short description of the issue and some steps to reproduce it.
-
-Good Luck!
-
-# Tips & Tricks
-
-## Customizing the home position
-
-The robot has a configurable **HOME** position, which it will go to after start up. Each servo also has a configurable **zero position** that the driver uses as the zero reference in radians. These can be configured via the config files.
-
-- **Via ROS 2 launch/config files (used in `lerobot`)**  
-  When this library is used from the `lerobot` package, the home position and raw tick offsets are configured through ROS 2 parameter YAML files that are loaded by the launch files:
-
-  - In `robot_hw.yaml`  
-    - `zero_positions`: array of raw tick values passed to `FeetechServo::setHomePosition` for each servo ID, e.g.  
-      `zero_positions: [1950, 1950, 1950, 2048, 2048, 2048]`  
-    - `home_position`: joint angles in radians that define the logical home pose of the robot, e.g.  
-      `home_position: [0.0, 1.8326, -1.2217, -1.0472, 0.0]`
-
-  - In `robot_read.yaml`  
-    - `zero_positions`: same idea as above, for a read‑only node that only publishes joint states.
-
-  To customize the home, edit these arrays in the respective YAML file and then re‑launch the corresponding launch file (e.g. the hardware or read‑only launch). 
-
-
-
-
+The Sympy notebooks for the symbolic derivations can be found in _tasks/_.

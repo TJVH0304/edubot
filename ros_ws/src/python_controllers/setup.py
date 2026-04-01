@@ -22,6 +22,13 @@ setup(
         'console_scripts': [
             'example_pos_traj = python_controllers.example_pos_traj:main',
             'example_vel_traj = python_controllers.example_vel_traj:main',
+            'triangle = python_controllers.triangle_traj:main',
+            'figeight = python_controllers.figeight_traj:main',
+            'given = python_controllers.given_traj:main',
+            'pnp = python_controllers.pnp_traj:main',
+            'path = python_controllers.traj:main',
+            'stack = python_controllers.stack_traj:main',
+            'vel = python_controllers.vel_traj:main',
         ],
     },
 )
